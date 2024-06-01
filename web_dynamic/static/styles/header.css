@@ -13,10 +13,6 @@ header .logo {
 	margin-left: 40px;
 	height: 100%;
 	cursor: pointer;
-
-	@media (width > 700px) {
-		margin-left: 80px;
-	}
 }
 
 #api_status {
