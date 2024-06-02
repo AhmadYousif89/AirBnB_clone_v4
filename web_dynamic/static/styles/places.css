@@ -193,4 +193,19 @@
 			}
 		}
 	}
+
+	.status {
+		font-size: var(--fs-800);
+		text-align: center;
+		font-weight: 600;
+	}
+
+	.no-data {
+		color: var(--light-red);
+	}
+
+	.loading {
+		color: var(--light-gray-400);
+	}
+
 }
