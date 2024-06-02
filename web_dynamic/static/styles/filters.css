@@ -64,13 +64,6 @@
 		margin-left: 40px;
 	}
 
-	& h4 {
-		font-weight: 400;
-		margin-left: 40px;
-		font-size: var(--fs-300);
-	}
-
-
 	@media (width < 800px) {
 		& h3 {
 			margin-left: 20px;
@@ -80,55 +73,38 @@
 			display: none;
 		}
 	}
-}
 
-.filters .popover {
-	display: none;
-	position: absolute;
-	z-index: 999;
-	top: 100%;
-	width: 250px;
-	background-color: var(--light-gray-100);
-	border: 1px solid var(--light-gray-400);
-	border-radius: 0 0 4px;
-	padding: 40px 20px;
-	box-shadow: 1px 1px 3px var(--light-gray-400);
-	max-height: 300px;
-	overflow-y: auto;
-	/* Prevents the page from scrolling when the popover is open */
-	overscroll-behavior: contain;
+	& .popover {
+		display: none;
+		position: absolute;
+		z-index: 999;
+		top: 100%;
+		width: 250px;
+		background-color: var(--light-gray-100);
+		border: 1px solid var(--light-gray-400);
+		border-radius: 0 0 4px;
+		padding: 40px 20px;
+		box-shadow: 1px 1px 3px var(--light-gray-400);
+		max-height: 300px;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 
-	li h2 {
-		font-size: var(--fs-400);
-		margin-bottom: 15px;
-	}
+		li h2 {
+			font-size: var(--fs-400);
+			margin-bottom: 15px;
+		}
 
-	@media (width < 800px) {
-		& li h2 {
-			font-size: var(--fs-300);
+		@media (width < 800px) {
+			& li h2 {
+				font-size: var(--fs-300);
+			}
 		}
 	}
 }
 
-.amenities {
+.amenities,
+.locations {
 	position: relative;
-}
-
-.amenities .selected {
-	position: absolute;
-	display: block;
-	bottom: 10px;
-	width: 200px;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
-	margin-left: 40px;
-	cursor: default;
-
-	@media (width < 800px) {
-		margin-left: 20px;
-		width: 160px;
-	}
 }
 
 .amenities .popover li {
@@ -151,19 +127,48 @@
 		margin-bottom: 20px;
 	}
 
+	.city,
+	.state {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+
+		input,
+		label {
+			cursor: pointer;
+		}
+	}
+
+	.state {
+		font-size: 14px;
+		margin-bottom: 16px;
+		font-weight: 600;
+	}
+
 	.city {
-		cursor: pointer;
 		margin-left: 20px;
 
 		&:not(:last-child) {
 			margin-bottom: 10px;
 		}
 
-		border-bottom: 1px solid transparent;
-
-		&:hover {
-			border-bottom-color: var(--light-red);
-		}
 	}
 
+}
+
+.selected {
+	position: absolute;
+	display: block;
+	bottom: 10px;
+	width: 200px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	margin-left: 40px;
+	cursor: default;
+
+	@media (width < 800px) {
+		margin-left: 20px;
+		width: 160px;
+	}
 }
