@@ -2,7 +2,6 @@
 """
 Script that starts a Flask web application with a route '/2-hbnb/'
 """
-import os
 from uuid import uuid4
 from flask import Flask, render_template
 from models import storage
