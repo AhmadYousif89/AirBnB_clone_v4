@@ -25,6 +25,7 @@
 	border-radius: 4px;
 	margin-left: auto;
 	margin-right: 30px;
+	box-shadow: 1px 3px 5px var(--light-gray-500);
 	z-index: 1;
 
 	&:hover {
@@ -62,16 +63,6 @@
 
 	& h3 {
 		margin-left: 40px;
-	}
-
-	@media (width < 800px) {
-		& h3 {
-			margin-left: 20px;
-		}
-
-		& h4 {
-			display: none;
-		}
 	}
 
 	& .popover {
@@ -160,15 +151,38 @@
 	position: absolute;
 	display: block;
 	bottom: 10px;
-	width: 200px;
+	width: 250px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
 	margin-left: 40px;
 	cursor: default;
 
-	@media (width < 800px) {
-		margin-left: 20px;
-		width: 160px;
+	@media (width < 1141px) {
+		width: 200px;
+
+		@media (width < 900px) {
+			width: 130px;
+		}
+
+		@media (width < 600px) {
+			display: none;
+		}
 	}
+
+}
+
+.filter-count {
+	position: absolute;
+	display: grid;
+	place-items: center;
+	background-color: var(--light-red);
+	color: white;
+	border-radius: 999px;
+	width: 30px;
+	height: 30px;
+	font-size: var(--fs-300);
+	font-weight: 600;
+	top: 5px;
+	left: 5px;
 }
