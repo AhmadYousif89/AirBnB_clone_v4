@@ -26,18 +26,33 @@ function displayCheckedAmenities() {
   } else {
     $('.filters .amenities>.selected').html('&nbsp;');
   }
+  const totalAmenities = Object.keys(checkedAmenities).length;
+  $('.filters .amenities .filter-count').text(
+    totalAmenities <= 99 ? totalAmenities : '99+'
+  );
 }
 
 function loadCheckedAmenities() {
   $('input[name="amenity"]').each(function () {
     if ($(this).is(':checked')) {
       checkedAmenities[$(this).attr('data-id')] = $(this).attr('data-name');
-      $(this).prop('checked', true);
-    } else {
-      $(this).prop('checked', false);
-      delete checkedAmenities[$(this).attr('data-id')];
+      $(this).prop('checked', true).attr('checked', true);
     }
+    $(this).change(function (e) {
+      if (e.target === $(this)[0]) {
+        if ($(this).is(':checked')) {
+          $(this).prop('checked', true).attr('checked', true);
+          checkedAmenities[$(this).attr('data-id')] = $(this).attr('data-name');
+        } else {
+          $(this).prop('checked', false).removeAttr('checked');
+          delete checkedAmenities[$(this).attr('data-id')];
+        }
+      }
+      displayCheckedAmenities();
+      console.log('checkedAmenities: ', checkedAmenities);
+    });
   });
+  console.log('Initial checkedAmenities: ', checkedAmenities);
   displayCheckedAmenities();
 }
 
@@ -50,53 +65,86 @@ function displayCheckedLocations() {
   } else {
     $('.filters .locations>.selected').html('&nbsp;');
   }
-  console.log(checkedStates);
-  console.log(checkedCities);
+  const totalLocations =
+    Object.keys(checkedStates).length + Object.keys(checkedCities).length;
+  $('.filters .locations .filter-count').text(
+    totalLocations <= 99 ? totalLocations : '99+'
+  );
 }
 
 function loadCheckedStates() {
-  $('input[name="state"]').each(function () {
-    let state_name = $(this).attr('data-name');
-    let state_id = $(this).attr('data-id');
+  $('.state input[name="state"]').each(function () {
     if ($(this).is(':checked')) {
-      // add the state to the checkedStates object
-      checkedStates[state_id] = state_name;
-      $(this).prop('checked', true);
-      // Check all child cities if the closest input[name="state"] is checked
-      $(this)
-        .closest('ul li')
-        .find('input[name="city"]')
-        .each(function () {
-          $(this).prop('checked', true);
-          checkedCities[$(this).attr('data-id')] = $(this).attr('data-name');
-        });
-    } else {
-      $(this).prop('checked', false);
-      delete checkedStates[state_id];
-      // Uncheck all child cities if the closest input[name="state"] is equal to the state_name
-      $(this)
-        .parent()
-        .next('ul')
-        .find(`input[name="city"]`)
-        .each(function () {
-          $(this).prop('checked', false);
-          delete checkedCities[$(this).attr('data-id')];
-        });
+      $(this).prop('checked', true).attr('checked', true);
+      checkedStates[$(this).attr('data-id')] = $(this).attr('data-name');
     }
+    $(this).change(function (e) {
+      const cityCheckboxes = $(this).closest('li').find('.city input[name="city"]');
+      if (e.target === $(this)[0]) {
+        if ($(this).is(':checked')) {
+          $(this).prop('checked', true).attr('checked', true);
+          checkedStates[$(this).attr('data-id')] = $(this).attr('data-name');
+          cityCheckboxes.each(function () {
+            $(this).prop('checked', true).attr('checked', true);
+            if (!checkedCities[$(this).attr('data-id')]) {
+              checkedCities[$(this).attr('data-id')] = $(this).attr('data-name');
+            }
+          });
+        } else {
+          $(this).prop('checked', false).removeAttr('checked');
+          delete checkedStates[$(this).attr('data-id')];
+          cityCheckboxes.each(function () {
+            $(this).prop('checked', false).removeAttr('checked');
+            delete checkedCities[$(this).attr('data-id')];
+          });
+        }
+      }
+      displayCheckedLocations();
+      console.log('checkedStates: ', checkedStates);
+      console.log('checkedCities: ', checkedCities);
+    });
   });
+  console.log('Initial checkedStates: ', checkedStates);
   displayCheckedLocations();
 }
 
 function loadCheckedCities() {
-  $('input[name="city"]').each(function () {
+  $('.city input[name="city"]').each(function () {
     if ($(this).is(':checked')) {
       checkedCities[$(this).attr('data-id')] = $(this).attr('data-name');
-      $(this).prop('checked', true);
-    } else {
-      $(this).prop('checked', false);
-      delete checkedCities[$(this).attr('data-id')];
+      $(this).prop('checked', true).attr('checked', true);
     }
+    $(this).change(function (e) {
+      if (e.target === $(this)[0]) {
+        const stateCheckbox = $(this).parents('li').find('input[name="state"]');
+        if ($(this).is(':checked')) {
+          $(this).prop('checked', true).attr('checked', true);
+          checkedCities[$(this).attr('data-id')] = $(this).attr('data-name');
+          // if all cities are checked, check the state
+          const allCitiesChecked =
+            $(this).closest('ul').find('.city input[name="city"]').length ===
+            $(this).closest('ul').find('.city input[name="city"]:checked').length;
+          if (allCitiesChecked) {
+            stateCheckbox.prop('checked', true).attr('checked', true);
+            checkedStates[stateCheckbox.attr('data-id')] =
+              stateCheckbox.attr('data-name');
+          }
+        } else {
+          $(this).prop('checked', false).removeAttr('checked');
+          delete checkedCities[$(this).attr('data-id')];
+          // if any city is unchecked, uncheck the state
+          if (stateCheckbox.is(':checked')) {
+            delete checkedStates[stateCheckbox.attr('data-id')];
+            stateCheckbox.prop('checked', false).removeAttr('checked');
+          }
+        }
+      }
+      displayCheckedLocations();
+      console.log('checkedCities: ', checkedCities);
+      console.log('checkedStates: ', checkedStates);
+    });
   });
+  console.log('Initial checkedCities: ', checkedCities);
   displayCheckedLocations();
 }
 
@@ -120,7 +168,7 @@ function loadPlaces() {
   }
 
   res.done(function (places) {
-    console.log(places);
+    console.log('Loaded Places: ', places);
     if (places.length === 0) {
       $('.places .wrapper .status').addClass('no-data').text('No places available :/');
     } else {
@@ -218,15 +266,14 @@ function loadReviews() {
 
 $(function () {
   checkAPIStatus();
-  $('.filters .amenities h3').after('<small class="selected"></small>');
-  $('.filters .locations h3').after('<small class="selected"></small>');
-  loadCheckedAmenities(); // Intial load
-  $('input[name="amenity"]').change(loadCheckedAmenities);
-  loadCheckedStates(); // Intial load
-  $('input[name="state"]').change(loadCheckedStates);
-  loadCheckedCities(); // Intial load
-  $('input[name="city"]').change(loadCheckedCities);
-  loadPlaces(); // Intial load
+  ['amenities', 'locations'].forEach(filter => {
+    $(`.filters .${filter} h3`).after('<small class="selected"></small>');
+    $(`.filters .${filter}`).prepend('<small class="filter-count"></small>');
+  });
+  loadCheckedAmenities();
+  loadCheckedStates();
+  loadCheckedCities();
+  loadPlaces();
   $('.filters button').click(function () {
     $('.places .wrapper').empty();
     loadPlaces();
