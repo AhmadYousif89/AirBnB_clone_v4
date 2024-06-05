@@ -2,20 +2,8 @@ const $ = window.$;
 const checkedAmenities = {};
 const checkedStates = {};
 const checkedCities = {};
-
-function checkAPIStatus() {
-  const url = 'http://127.0.0.1:5001/api/v1/status';
-  $('#api_status').attr('title', 'Checking API status . . . ');
-  const res = $.get(url);
-  res.done(() => {
-    setTimeout(() => {
-      $('#api_status').addClass('available').attr('title', 'API Status: online');
-    }, 2000);
-  });
-  res.fail(() => {
-    $('#api_status').removeClass('available').attr('title', 'API Status: offline');
-  });
-}
+const apiUrl = 'http://127.0.0.1:5001/api/v1';
+const imageNames = localImageNames ? localImageNames : [];
 
 function displayCheckedAmenities() {
   const checkedNames = Object.values(checkedAmenities);
@@ -148,56 +136,54 @@ function loadCheckedCities() {
   displayCheckedLocations();
 }
 
-function loadPlaces() {
-  let isLoading = true;
+async function loadPlaces() {
   $('.places .wrapper').append('<p class="status"></p>');
-  const url = 'http://127.0.0.1:5001/api/v1/places_search';
-  const res = $.ajax({
-    url,
-    type: 'POST',
-    data: JSON.stringify({
-      amenities: Object.keys(checkedAmenities),
-      states: Object.keys(checkedStates),
-      cities: Object.keys(checkedCities)
-    }),
-    contentType: 'application/json'
-  });
-
-  if (isLoading) {
+  const url = `${apiUrl}/places_search`;
+  try {
     $('.places .wrapper .status').addClass('loading').text('Loading places . . .');
-  }
-
-  res.done(function (places) {
+    const places = await $.ajax({
+      url,
+      type: 'POST',
+      data: JSON.stringify({
+        amenities: Object.keys(checkedAmenities),
+        states: Object.keys(checkedStates),
+        cities: Object.keys(checkedCities)
+      }),
+      contentType: 'application/json'
+    });
     console.log('Loaded Places: ', places);
-    if (places.length === 0) {
+    let placeCount = places.length;
+    placeCount = placeCount <= 99 ? placeCount : '99+';
+    if (placeCount === 0) {
       $('.places .wrapper .status').addClass('no-data').text('No places available :/');
     } else {
-      $('.places .wrapper .status').removeClass('no-data').text('');
+      $('.places .wrapper .status').removeClass('no-data');
       $('.status').remove();
     }
+    $('.places .places-count').text(placeCount);
 
     for (const place of places) {
       $('.places .wrapper').append(
-        `<article data-id="${place.id}">
+        `<article data-id="${place.id}" class="place">
           <h2 title="${place.name}">${place.name}</h2>
           <div class="price_by_night">
               <span>$${place.price_by_night}</span>
           </div>
           <div class="information">
             <div class="max_guest">
-              <img src="../static/images/icon_group.png" alt="icon">
+              <img src="../static/images/group.png" alt="icon">
               <span>
                 ${place.max_guest} Guest${place.max_guest !== 1 ? 's' : ''}
               </span>
             </div>
             <div class="number_rooms">
-              <img src="../static/images/icon_bed.png" alt="icon">
+              <img src="../static/images/bed.png" alt="icon">
               <span>
                 ${place.number_rooms} Bedroom${place.number_rooms !== 1 ? 's' : ''}
               </span>
             </div>
             <div class="number_bathrooms">
-              <img src="../static/images/icon_bath.png" alt="icon">
+              <img src="../static/images/bath.png" alt="icon">
               <span>
                 ${place.number_bathrooms} Bathroom${
           place.number_bathrooms !== 1 ? 's' : ''
@@ -206,69 +192,138 @@ function loadPlaces() {
             </div>
           </div>
           <div class="description"><p>${place.description}</p></div>
-          <span class="toggle-reviews">show reviews</span>
-          <div class="reviews hide">
-            <div class="header">
-                <span>2</span>
-                <h2 class="title">Reviews</h2>
-            </div>
+          <div class="amenities">
+            <h3>Amenities</h3>
             <ul>
             </ul>
           </div>
+          <button class="toggle-reviews btn">show reviews</button>
+          <dialog class="reviews">
+            <header>
+                <span class="review-counter circle"></span>
+                <h3>Reviews</h3>
+            </header>
+            <ul>
+            </ul>
+            <button class="close btn">Close</button>
+          </dialog>
         </article>`
       );
     }
-    $('.toggle-reviews').click(function () {
-      // toggleReviews();
-      loadReviews();
+    const place = $('.places .wrapper .place');
+    place.each(function () {
+      loadPlaceAmenities($(this), $(this).attr('data-id'));
     });
-  });
-
-  res.fail(() => {
+    place.on('click', '.toggle-reviews', function (e) {
+      e.stopPropagation();
+      const placeElement = $(this).closest('.place');
+      $(this).text('hide reviews');
+      placeElement.find('.reviews')[0].showModal();
+      loadReviews(placeElement, placeElement.attr('data-id'));
+    });
+    place.on('click', '.reviews .close', function () {
+      $(this).closest('.reviews')[0].close();
+      $(this).closest('.place').find('.toggle-reviews').text('show reviews');
+    });
+  } catch (error) {
+    $('.places .places-count').text('❔');
     $('.places .wrapper .status').addClass('no-data').text('Failed to load places :/');
     console.log('Failed to load places');
-  });
-  res.always(() => {
+  } finally {
     $('.places .wrapper .status').removeClass('loading');
-  });
-}
-
-function toggleReviews() {
-  if ($('.places article .reviews').is(':visible')) {
-    $('.places article .reviews').hide();
-  } else {
-    $('.places article .reviews').show();
   }
 }
 
-function loadReviews() {
-  const placeId = $(this).closest('article').attr('data-id');
-  const url = `http://127.0.0.1:5001/api/v1/places/${placeId}/reviews`;
-  const res = $.get(url);
-  res.done(function (reviews) {
-    $('.places article .reviews ul').empty();
-    let user_name = '';
+async function loadPlaceAmenities(placeElement, placeId) {
+  const url = `${apiUrl}/places/${placeId}/amenities`;
+  const ul = $(placeElement).find('.amenities ul');
+  try {
+    const amenities = await $.get(url);
+    for (const amenity of amenities) {
+      if (imageNames.includes(amenity.name)) {
+        ul.append(
+          `<li class="amenity">
+            <img src="../static/images/${amenity.name}.png" alt="${amenity.name} image">
+            <span>${amenity.name}</span>
+          </li>`
+        );
+      } else {
+        ul.append(
+          `<li class="amenity">
+            <img src="../static/images/icon.png" alt="default amenity image">
+            <span>${amenity.name}</span>
+          </li>`
+        );
+      }
+    }
+  } catch (error) {
+    console.log('Failed to load amenities');
+  }
+}
+
+async function loadReviews(placeElement, placeId) {
+  const url = `${apiUrl}/places/${placeId}/reviews`;
+  const ul = $(placeElement).find('.reviews ul');
+  ul.empty();
+  ul.append('<li class="loading">Loading reviews . . .</li>');
+
+  try {
+    const reviews = await $.ajax(url);
+    ul.empty();
+    let reviewCount = reviews.length;
+    reviewCount = reviewCount <= 99 ? reviewCount : '99+';
+    if (reviewCount === 0) {
+      ul.append('<li class="no-data">No reviews for this place</li>');
+    }
+    $(placeElement).find('.reviews .review-counter').text(reviewCount);
     for (const review of reviews) {
-      console.log('review: ', review);
-      const ul = $('.places article .reviews ul');
+      const user = await getUser(review.user_id);
+      const userName = user ? `${user.first_name} ${user.last_name}` : 'Unknown';
       ul.append(
         `<li class="review">
-          <h3>From ${user_name}</h3>
+          <h4>From ${userName}</h4>
           <p>${review.text}</p>
         </li>`
       );
     }
-  });
-  res.fail(() => {
+  } catch (error) {
+    ul.empty();
+    ul.append('<li class="no-data">Failed to load reviews</li>');
+    $(placeElement).find('.reviews .review-counter').html('<small>❔</small>');
     console.log('Failed to load reviews');
-  });
+  }
+}
+
+async function getUser(userId) {
+  const url = `${apiUrl}/users/${userId}`;
+  try {
+    const user = await $.get(url);
+    return user;
+  } catch (error) {
+    console.log('Failed to load user');
+    return null;
+  }
+}
+
+async function checkAPIStatus() {
+  const url = `${apiUrl}/status`;
+  $('#api_status').attr('title', 'Checking API status . . . ');
+  try {
+    await $.get(url);
+    setTimeout(() => {
+      $('#api_status').addClass('available').attr('title', 'API Status: online');
+    }, 2000);
+  } catch (error) {
+    console.log('API is not available');
+    $('#api_status').removeClass('available').attr('title', 'API Status: offline');
+  }
 }
 
 $(function () {
   checkAPIStatus();
   ['amenities', 'locations'].forEach(filter => {
     $(`.filters .${filter} h3`).after('<small class="selected"></small>');
-    $(`.filters .${filter}`).prepend('<small class="filter-count"></small>');
+    $(`.filters .${filter}`).prepend('<span class="filter-count circle"></span>');
   });
   loadCheckedAmenities();
   loadCheckedStates();
@@ -277,5 +332,17 @@ $(function () {
   $('.filters button').click(function () {
     $('.places .wrapper').empty();
     loadPlaces();
+  });
+
+  $(document).on('click', 'dialog.reviews[open]', function (e) {
+    const rect = $(this)[0].getBoundingClientRect();
+    if (
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom
+    ) {
+      $(this)[0].close();
+    }
   });
 });

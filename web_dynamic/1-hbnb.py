@@ -30,7 +30,7 @@ idx = 1
 
 
 @app.route('/{}-hbnb'.format(idx), strict_slashes=False)
-def hbnb_filters():
+def hbnb():
     """Displays a list of all States, Cities and Amenities"""
     states = list(storage.all("State").values())
     places = list(storage.all("Place").values())
