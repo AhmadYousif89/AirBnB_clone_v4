@@ -3,6 +3,7 @@
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS
+from flasgger import Swagger
 from models import storage
 from api.v1.views import app_views
 
@@ -23,6 +24,9 @@ def page_not_found(error):
     """Return a JSON-formatted 404 status code response"""
     return jsonify({"error": "Not found"}), 404
 
+
+app.config['SWAGGER'] = {'title': 'HBnB Restful API', 'uiversion': 1}
+Swagger(app)
 
 if __name__ == "__main__":
     host = os.getenv("HBNB_API_HOST", default="0.0.0.0")
