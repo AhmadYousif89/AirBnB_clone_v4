@@ -1,4 +1,7 @@
 {% extends 'layout.html' %}
+{% block SCRIPTS %}
+<script> const localImageNames = JSON.parse('{{ image_names|tojson }}'); </script>
+{% endblock SCRIPTS %}
 {% block BODY %}
 
 <body>
