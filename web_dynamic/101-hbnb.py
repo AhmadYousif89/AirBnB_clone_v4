@@ -6,6 +6,7 @@ import os
 from uuid import uuid4
 from flask import Flask, render_template
 from models import storage
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
@@ -18,12 +19,13 @@ def teardown(exception):
 
 def get_image_names():
     """Returns a list of image names without extension"""
-    image_dir = os.path.join(os.path.dirname(__file__), 'static', 'images')
-    return [
-        os.path.splitext(f)[0]
-        for f in os.listdir(image_dir)
-        if os.path.isfile(os.path.join(image_dir, f))
-    ]
+    svg_file = os.path.join(os.path.dirname(__file__), 'static', 'images')
+    with open(os.path.join(svg_file, 'amenities.svg')) as f:
+        svg_data = f.read()
+    soup = BeautifulSoup(svg_data, 'lxml')
+    svg_ids = [svg.get('id') for svg in soup.find_all('svg')]
+    print(svg_ids)
+    return svg_ids
 
 
 idx = 101
