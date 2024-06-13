@@ -12,8 +12,10 @@
 	/* COLORS */
 	--light-red: #ff5a5f;
 	--light-gray-100: #fafafa;
-	--light-gray-400: #ddd;
-	--light-gray-500: #ccc;
+	--light-gray-200: #f2f2f2;
+	--light-gray-300: #e2e2e2;
+	--light-gray-400: #d3d3d3;
+	--light-gray-500: #c4c4c4;
 	--dark-gray: #484848;
 	/* FONTS */
 	--fs-200: 12px;
@@ -61,5 +63,45 @@ svg {
 	@media (width < 1410px) {
 		width: auto;
 		margin-inline: 2rem;
+	}
+}
+
+.circle {
+	display: grid;
+	place-items: center;
+	border-radius: 999px;
+	width: 30px;
+	height: 30px;
+	aspect-ratio: 1;
+	box-shadow: 1px 1px 2px 1px var(--light-gray-400);
+
+	@media (width < 500px) {
+		width: 24px;
+		height: 24px;
+	}
+}
+
+.btn {
+	padding: 10px;
+	min-width: 5rem;
+	border-radius: 4px;
+	border: 1px solid transparent;
+	font-weight: 600;
+	font-size: var(--fs-200);
+	color: var(--light-gray-100);
+	background-color: var(--light-red);
+	box-shadow: 1px 1px 3px var(--light-gray-400);
+	transition:
+		color 0.2s, background-color 0.2s, border-color 0.2s,
+		transform 0.2s;
+
+	&:hover {
+		background-color: var(--light-gray-200);
+		color: var(--drak-gray);
+		border-color: var(--light-gray-400);
+	}
+
+	&:active {
+		transform: translate(0, 5px);
 	}
 }

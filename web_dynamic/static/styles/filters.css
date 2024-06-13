@@ -63,6 +63,11 @@
 
 	& h3 {
 		margin-left: 40px;
+
+		@media (width < 500px) {
+			margin-left: 30px;
+			font-size: var(--fs-300);
+		}
 	}
 
 	& .popover {
@@ -174,13 +179,8 @@
 
 .filter-count {
 	position: absolute;
-	display: grid;
-	place-items: center;
 	background-color: var(--light-red);
 	color: white;
-	border-radius: 999px;
-	width: 30px;
-	height: 30px;
 	font-size: var(--fs-300);
 	font-weight: 600;
 	top: 5px;
