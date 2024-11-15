@@ -29,6 +29,7 @@ This repository contains the initial stage of a student project to build a clone
 
 <br>
 <br>
+
 ## Get Started
 
 <br>
@@ -87,6 +88,8 @@ Advanced syntax is implemented for the following commands:
     * destroy
     * update
 
+<br>
+
 ## Project Overview
 
 <br>
@@ -96,7 +99,7 @@ This is an overview diagram representing the project workflow.
 ![diagram](./assets/diagram.png)
 
 <br>
-<br>
+
 <center> <h2>Examples</h2> </center>
 
 Examples of using the console both interactively and non-interactively:
@@ -148,6 +151,7 @@ $
 ```
 
 <br>
+
 <h3>Primary Command Syntax</h3>
 
 ###### Example 0: Create an object
